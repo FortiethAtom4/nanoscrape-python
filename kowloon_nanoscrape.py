@@ -8,6 +8,7 @@ from objs.scrape_config import ScrapeConfig
 
 
 # Scraper module intended to scrape raws of Kowloon Generic Romance from weloma.art. 
+# Example link: https://weloma.art/472/150451/
 
 
 scrape_config = ScrapeConfig("kowloon-nanoscrape")
