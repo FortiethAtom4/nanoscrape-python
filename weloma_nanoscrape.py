@@ -11,7 +11,7 @@ from objs.scrape_config import ScrapeConfig
 # Example link: https://weloma.art/472/150451/
 
 
-scrape_config = ScrapeConfig("kowloon-nanoscrape", "chapter-img")
+scrape_config = ScrapeConfig("weloma-nanoscrape", "chapter-img")
 scrape_config.from_args() # get command line arguments
 
 options = Options()

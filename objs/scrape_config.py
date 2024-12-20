@@ -6,11 +6,11 @@ class ScrapeConfig():
         self.url: str = ""
         self.directory: str = "images"
         self.image_selector: str = image_selector
-    
+ 
     def from_args(self):
         parser = argparse.ArgumentParser(self.program_name)
         parser.add_argument("url", help="URL to scrape from")
-        parser.add_argument("-d", "--directory", help="string to a custom directory to save the scraped images. Defaults to 'images'.")
+        parser.add_argument("-d", "--directory", help="relative path to a custom directory to save the scraped images. Defaults to 'images'.")
         # add more args for selenium options
         args = parser.parse_args()
 
