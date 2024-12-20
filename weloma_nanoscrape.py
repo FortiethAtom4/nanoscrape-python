@@ -7,11 +7,11 @@ import requests
 from objs.scrape_config import ScrapeConfig
 
 
-# Scraper module intended to scrape raws of Kowloon Generic Romance from weloma.art. 
+# Scraper module intended to scrape raws of Kowloon Generic Romance from WeLoMa. 
 # Example link: https://weloma.art/472/150451/
 
 
-scrape_config = ScrapeConfig("kowloon-nanoscrape")
+scrape_config = ScrapeConfig("kowloon-nanoscrape", "chapter-img")
 scrape_config.from_args() # get command line arguments
 
 options = Options()
@@ -23,7 +23,7 @@ try:
     driver.get(scrape_config.url)
 
     # get images
-    elems = driver.find_elements(By.CLASS_NAME, "chapter-img")
+    elems = driver.find_elements(By.CLASS_NAME, scrape_config.image_selector)
     for item in elems: 
         imgs.append(item.get_attribute("src"))
 

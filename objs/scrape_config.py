@@ -1,10 +1,11 @@
 import argparse, os
 
 class ScrapeConfig():
-    def __init__(self, program_name: str):
+    def __init__(self, program_name: str, image_selector: str):
         self.program_name: str = program_name
         self.url: str = ""
         self.directory: str = "images"
+        self.image_selector: str = image_selector
     
     def from_args(self):
         parser = argparse.ArgumentParser(self.program_name)
