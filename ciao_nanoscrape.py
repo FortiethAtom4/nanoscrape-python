@@ -60,7 +60,7 @@ try:
         except NoSuchElementException:
                 print("\nEnd of chapter found, breaking loop")
                 break
-        canvas_base64 = driver.execute_script("return arguments[0].toDataURL('image/png',quality=1).substring(21);",canvas_element)
+        canvas_base64 = driver.execute_script("return arguments[0].toDataURL('image/png').substring(21);",canvas_element)
         print(f"Got {i + 1} image{"" if i == 0 else "s"}...",end="\r")
         canvas_png = base64.b64decode(canvas_base64)
         images.append(canvas_png)
