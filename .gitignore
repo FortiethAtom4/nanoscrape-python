@@ -3,5 +3,7 @@ scrapes/
 images/
 tests/
 logins/
+__pycache__/
+objs/__pycache__/
 notes.md
 getkowloon.bat
