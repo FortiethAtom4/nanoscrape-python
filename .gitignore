@@ -1,5 +1,7 @@
 venv/
 scrapes/
 images/
+tests/
+logins/
 notes.md
 getkowloon.bat

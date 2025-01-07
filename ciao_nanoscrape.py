@@ -17,13 +17,10 @@ from objs.scrape_config import ScrapeConfig
 # canvas_selector = ".c-viewer__comic"
 # navigation_selector = ".c-viewer__pager-next"
 # page_container = ".c-viewer__pages"
-print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
-print("~~~~~~~~~~NANOSCRAPE~~~~~~~~~~")
-print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
-print("nanoscrape-python version 12/2024.\n")
 
 scrape_config = ScrapeConfig("ciao-nanoscrape","c-viewer__comic")
 scrape_config.from_args() # get command line arguments
+
 
 options = uc.ChromeOptions()
 options.add_argument("--disable-web-security")
@@ -39,15 +36,14 @@ driver.get(scrape_config.url)
 pages_present = expected_conditions.element_to_be_clickable((By.CLASS_NAME,"c-viewer__pager-next")) # TODO catch wait errors for bad links
 timeout = 10 # seconds to wait until timeout
 WebDriverWait(driver, timeout).until(pages_present)
-time.sleep(5) # had to add 5 seconds after pages present to catch everything
+time.sleep(5) # had to add 5 seconds after pages present to catch everything. Jank but highly functional for now
 
-print("-> Images detected.")
 #count number of pages
 all_pages = driver.find_elements(By.CLASS_NAME,scrape_config.image_selector)
+print("-> Images detected.")
 
-# to store images
 print("Beginning scrape...")
-scrape_config.make_directory()
+scrape_config.make_directory() 
 try:
 # get images, loop runs until elem without canvas is reached
     for i, page in enumerate(all_pages):
@@ -74,7 +70,7 @@ try:
 except Exception as e:
     print(f"\nAn error was caught during scraping:\n{e}\nAborting")
 finally:
-    driver.quit()
+    driver.close()
     if len(images) > 0:
         for id, img in enumerate(images):
             print(f"Saving {id + 1}.png...")
