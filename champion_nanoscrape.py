@@ -24,8 +24,7 @@ from objs.scrape_config import ScrapeConfig
 scrape_config = ScrapeConfig("champion-nanoscrape","-cv-page-canvas")
 scrape_config.from_args() # get command line arguments
 
-scrape_config.login_username = "FortiethAtom4"
-scrape_config.login_password = "MushroomsOP16!"
+
 
 # helper function to log into the site to scrape paid chapters.
 def do_login():
