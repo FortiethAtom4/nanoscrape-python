@@ -29,7 +29,7 @@ class ScrapeConfig():
         print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
         print("~~~~~~~~~~NANOSCRAPE~~~~~~~~~~")
         print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
-        print("nanoscrape-python version 12/2024.")
+        print("nanoscrape-python version 3/2025.")
         print(f"Starting script '{self.program_name}'...")
         # add more args for selenium options
         

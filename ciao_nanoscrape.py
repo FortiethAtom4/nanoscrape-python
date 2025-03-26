@@ -18,6 +18,8 @@ from objs.scrape_config import ScrapeConfig
 # navigation_selector = ".c-viewer__pager-next"
 # page_container = ".c-viewer__pages"
 
+
+
 scrape_config = ScrapeConfig("ciao-nanoscrape","c-viewer__comic")
 scrape_config.from_args() # get command line arguments
 
@@ -49,7 +51,6 @@ try:
     for i, page in enumerate(all_pages):
         all_pages = driver.find_elements(By.CLASS_NAME,scrape_config.image_selector) # needs to be updated each time
         canvas_element = ""
-
         # end of chapter has pages without canvas, use those to break loop
         try:
             canvas_element = page.find_element(By.TAG_NAME,"canvas")
@@ -74,7 +75,7 @@ finally:
     if len(images) > 0:
         for id, img in enumerate(images):
             print(f"Saving {id + 1}.png...")
-            with open(f"{scrape_config.directory}/{id + 1}.png","wb") as f:
+            with open(f"{scrape_config.directory}/page_{id + 1}.png","wb") as f:
                 f.write(img)
         print(f"\nImages saved to local directory '{scrape_config.directory}/'.")
 

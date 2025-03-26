@@ -18,6 +18,8 @@ from objs.scrape_config import ScrapeConfig
 
 # fix for undetected-chromedriver OS error: https://stackoverflow.com/questions/74817978/oserror-winerror-6-with-undetected-chromedriver/76497142
 
+# TODO: use wait functionality to replace janky hard-coded wait times
+
 # image is a child Canvas element of the selected for here
 scrape_config = ScrapeConfig("shonenjumpplus-nanoscrape","page-area")
 scrape_config.add_arg("-u","--username","Username for login")
@@ -76,7 +78,10 @@ def do_login():
 def sjp_nanoscrape():
 
     do_login()
-    time.sleep(3)
+    pages_present = expected_conditions.element_to_be_clickable((By.CLASS_NAME,"page-navigation-forward")) # TODO catch wait errors for bad links
+    timeout = 10 # seconds to wait until timeout
+    WebDriverWait(driver, timeout).until(pages_present)
+    # time.sleep(3)
     #count number of pages
     all_pages = driver.find_elements(By.CLASS_NAME,scrape_config.image_selector)
     print(f"-> {len(all_pages)} Images detected (including ad pages, dummy pages, etc).")
@@ -91,6 +96,7 @@ def sjp_nanoscrape():
 
             # Skip the first dummy page
             try:
+                # NOTE: this try-except block guarantees that the scraper flips 1 page ahead of the images it is actually saving. Might be a good idea to look into better ways to circumvent this dummy page.
                 page.find_element(By.CLASS_NAME,"page-dummy")
                 continue 
             except NoSuchElementException:
