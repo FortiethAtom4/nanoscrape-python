@@ -1,5 +1,6 @@
 import argparse, os
 
+
 class ScrapeConfig():
 
     def __init__(self, program_name: str, image_selector: str):
@@ -19,6 +20,7 @@ class ScrapeConfig():
     def add_arg(self,option: str, option_long: str = None, help: str = ""):
         self.parser.add_argument(option,option_long,help=help)
  
+    # TODO remove
     def from_args(self):
         self.parser.add_argument("url", help="URL to scrape from")
         self.parser.add_argument("-d", "--directory", help="relative path to a custom directory to save the scraped images. Defaults to 'images'.")
