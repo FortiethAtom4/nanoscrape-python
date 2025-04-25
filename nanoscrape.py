@@ -31,6 +31,9 @@ def nanoscrape():
         case "youngchampion.jp":
             scraper_class = "objs.champion"
 
+        case "booklive.jp":
+            scraper_class = "objs.booklive"
+
         case _:
             print(f"URL {url.geturl()} not recognized by nanoscrape. Please check and try again.")
             return
