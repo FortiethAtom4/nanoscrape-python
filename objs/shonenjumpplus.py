@@ -1,11 +1,9 @@
-from selenium import webdriver
 from selenium.webdriver.common.by import By
-from selenium.webdriver.firefox.options import Options
 from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.common.exceptions import NoSuchElementException
 # undetected module adds some standard anti-bot detection protocols 
-import requests, time, base64, maskpass, undetected_chromedriver as uc
+import time, base64, maskpass, undetected_chromedriver as uc
 
 # local imports
 from objs.scrape_config import ScrapeConfig

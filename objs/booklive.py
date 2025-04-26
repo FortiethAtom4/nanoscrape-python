@@ -1,23 +1,28 @@
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.support.ui import WebDriverWait
-from selenium.common.exceptions import NoSuchElementException
 # undetected module adds some standard anti-bot detection protocols 
-import time, base64, undetected_chromedriver as uc, os
+import time, undetected_chromedriver as uc, os
+
+# need this stuff to get image and convert into something usable
+from binascii import a2b_base64
 from PIL import Image
-import requests
-import cv2 #for concatenating images
+from io import BytesIO 
+
+# need to do something funky to move between pages
+from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.common.keys import Keys
+
 # local imports
 from objs.scraper import Scraper
 
 
 # Scraper module intended to scrape raws of Hoshi Tonde from Booklive.
 # https://booklive.jp/product/index/title_id/557255/vol_no/001
-# https://booklive.jp/bviewer/s/?cid=557255_001&rurl=https%3A%2F%2Fbooklive.jp%2Fproduct%2Findex%2Ftitle_id%2F557255%2Fvol_no%2F001
 
-# canvas_selector = ".c-viewer__comic"
-# navigation_selector = ".c-viewer__pager-next"
-# page_container = ".c-viewer__pages"
+# https://booklive.jp/bviewer/s/?cid=557255_001
+
+# honestly kinda crazy that link works. Is the user's ID in the URL??
 
 class ScraperImpl(Scraper):
     
@@ -27,14 +32,14 @@ class ScraperImpl(Scraper):
         self.options = uc.ChromeOptions()
         self.options.enable_downloads = True
         self.options.add_argument("--disable-web-security")
-        # self.options.add_argument("--headless")
+        self.options.add_argument("--headless")
         self.driver = uc.Chrome(options=self.options)
 
         self.dir = ""
-        self.img_selector = "pages" #this div contains all pages, but each page has its own ID "content-p[i] where i is page #"
-        self.page_turn_selector = "c-viewer__pager-next"
+        self.img_selector = "content" #this div contains all pages, but each page has its own ID "content-p[i] where i is page #"
+        self.page_turn_selector = "overswipe-wrap"
 
-        self.selector_to_wait_for = "c-viewer__pager-next"
+        self.selector_to_wait_for = "pages"
 
         # logins havent been necessary so far
         self.login_btn_selector = "" 
@@ -49,68 +54,79 @@ class ScraperImpl(Scraper):
         self.driver.get(self.url)
 
         # wait until page content is actually loaded
-        pages_present = expected_conditions.element_to_be_clickable((By.CLASS_NAME,self.img_selector)) # TODO catch wait errors for bad links
+        pages_present = expected_conditions.element_to_be_clickable((By.CLASS_NAME,self.selector_to_wait_for)) # TODO catch wait errors for bad links
         timeout = 10 # seconds to wait until timeout
         WebDriverWait(self.driver, timeout).until(pages_present)
         time.sleep(5) # had to add 5 seconds after pages present to catch everything. Jank but highly functional for now
 
-    # logins havent been necessary so far
+    # logins likely won't be necessary
     def login(self):
         return True
 
     def get_pages(self):
-        all_loaded_pages = self.driver.find_element(By.CLASS_NAME,self.img_selector).find_elements(By.XPATH,"*")
         print("-> Images detected.")
 
         print("Beginning scrape...")
         os.makedirs(os.path.dirname(f"{self.dir}/"), exist_ok=True)
         try:
-            for i, page in enumerate(all_loaded_pages):
-                all_loaded_pages = self.driver.find_element(By.CLASS_NAME,self.img_selector).find_elements(By.XPATH,"*")
-                page_container_string = f"content-p{i+1}" #page at this location is still divided into 3 parts, will need to stream together
+            
+            # click the tutorial thing off
+            actions = ActionChains(self.driver)
+            actions.move_to_element_with_offset(self.driver.find_element(By.ID,self.page_turn_selector),-500,0).click().perform()
+            
+            i = 0
+            # page loop
+            while self.driver.current_url == self.url:
+                page_container_string = f"content-p{i+1}" #page at this location is still divided into 3 parts, will need to stream together with cv2
 
                 page_container = self.driver.find_element(By.ID,page_container_string).find_element(By.CLASS_NAME,"pt-img")
                 page_data_parts = []
                 page_parts = page_container.find_elements(By.XPATH,"*") #the 3 parts
                 for part in page_parts:
-                    part = part.find_element(By.CSS_SELECTOR,"img")
-                    url = part.get_attribute("src")
-                    
-                    time.sleep(10)
-                    break
+                    part_img_child = part.find_element(By.CSS_SELECTOR,"img")
 
+                    # https://stackoverflow.com/questions/64172105/acess-data-image-url-when-the-data-url-is-only-obtain-upon-rendering
+                    img_base64 = self.driver.execute_script(
+    """
+    const img = arguments[0];
 
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = 1133;
+    canvas.height = 536;
+    ctx.drawImage(img, 0, 0);
 
-                #combine 3 parts together with cv2
-                final_image = cv2.vconcat([part for part in page_data_parts])
+    data_url = canvas.toDataURL('image/png');
+    return data_url
+    """, 
+    part_img_child)
+                    binary_data = a2b_base64(img_base64.split(',')[1])
+                    #~~
+                    final_image_part = Image.open(BytesIO(binary_data))
+
+                    page_data_parts.append(final_image_part)
+
+                #combine 3 parts together
+                width = max([image.width for image in page_data_parts])
+                height = sum([image.height for image in page_data_parts])
+                final_image = Image.new("RGB", (width, height))
+                y = 0
+                for part in page_data_parts:
+                    final_image.paste(part,(0,y))
+                    y += part.height
+
                 self.images.append(final_image)
-                time.sleep(1)
-                pass
-                break
                 
-        # try:
-        # # get images, loop runs until elem without canvas is reached
+                print(f"Got {i + 1} image{"" if i == 0 else "s"}...",end="\r")
 
-        #     for i, page in enumerate(all_pages):
-        #         all_pages = self.driver.find_elements(By.CLASS_NAME,self.img_selector) # needs to be updated each time
-        #         canvas_element = ""
-        #         # end of chapter has pages without canvas, use those to break loop
-        #         try:
-        #             canvas_element = page.find_element(By.TAG_NAME,"canvas")
-        #         except NoSuchElementException:
-        #                 print("\nEnd of chapter found, breaking loop")
-        #                 break
-        #         canvas_base64 = self.driver.execute_script("return arguments[0].toDataURL('image/png').substring(21);",canvas_element)
-        #         print(f"Got {i + 1} image{"" if i == 0 else "s"}...",end="\r")
-        #         canvas_png = base64.b64decode(canvas_base64)
-        #         self.images.append(canvas_png)
 
-        #         # click forward a page
-        #         if i % 2 == 0:
-        #             next_page = self.driver.find_element(By.CLASS_NAME,self.page_turn_selector)
-        #             next_page.click()
-        #             time.sleep(0.1)
-
+                # turn a page to load more images
+                if i % 2 == 0:
+                    actions.send_keys(Keys.LEFT).perform()
+                time.sleep(0.2)
+                i += 1
+                
+            print("")
             self.driver.quit()
             
         except Exception as e:
@@ -120,7 +136,6 @@ class ScraperImpl(Scraper):
     def save_pages(self):
         if len(self.images) > 0:
             for id, img in enumerate(self.images):
-                print(f"Saving {id + 1}.png...",end="\r")
-                with open(f"{self.dir}/page_{id + 1}.png","wb") as f:
-                    f.write(img)
+                img.save(f'{self.dir}/image_{id+1}.png')
+                print(f"Saving image_{id + 1}.png...",end="\r")
         print(f"\nImages saved to local directory '{self.dir}/'.")
