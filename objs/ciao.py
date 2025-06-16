@@ -3,7 +3,7 @@ from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.common.exceptions import NoSuchElementException
 # undetected module adds some standard anti-bot detection protocols 
-import time, base64, undetected_chromedriver as uc, os
+import time, base64, undetected_chromedriver as uc, os, maskpass
 
 # local imports
 from objs.scraper import Scraper
@@ -15,6 +15,10 @@ from objs.scraper import Scraper
 # canvas_selector = ".c-viewer__comic"
 # navigation_selector = ".c-viewer__pager-next"
 # page_container = ".c-viewer__pages"
+
+# .p-episode-purchase__btn
+
+# chromedriver fix: https://stackoverflow.com/questions/74817978/oserror-winerror-6-with-undetected-chromedriver
 
 class ScraperImpl(Scraper):
     
@@ -30,13 +34,12 @@ class ScraperImpl(Scraper):
         self.img_selector = "c-viewer__comic"
         self.page_turn_selector = "c-viewer__pager-next"
 
-        self.selector_to_wait_for = "c-viewer__pager-next"
+        self.selector_to_wait_for = "#comic-episode"
 
-        # logins havent been necessary so far
-        self.login_btn_selector = "" 
-        self.username_field_selector = ""
-        self.password_field_selector = ""
-        self.enter_login_info_selector = ""
+        self.login_btn_selector = ".p-episode-purchase__btn" 
+        self.username_field_selector = "#email"
+        self.password_field_selector = "#password"
+        self.enter_login_info_selector = "button.btn"
 
         self.images: list = []
         
@@ -45,13 +48,39 @@ class ScraperImpl(Scraper):
         self.driver.get(self.url)
 
         # wait until page content is actually loaded
-        pages_present = expected_conditions.element_to_be_clickable((By.CLASS_NAME,self.page_turn_selector)) # TODO catch wait errors for bad links
+        pages_present = expected_conditions.presence_of_element_located((By.CSS_SELECTOR,self.selector_to_wait_for)) # TODO catch wait errors for bad links
         timeout = 10 # seconds to wait until timeout
         WebDriverWait(self.driver, timeout).until(pages_present)
         time.sleep(5) # had to add 5 seconds after pages present to catch everything. Jank but highly functional for now
 
-    # logins havent been necessary so far
-    def login(self):
+    # logins now required as of chapter 21... rip
+    def login(self, username, password):
+        login_button = ""
+        try:
+            login_button = self.driver.find_element(By.CSS_SELECTOR,self.login_btn_selector)
+        except NoSuchElementException:
+            print("login button not detected, skipping")
+            return True
+        
+        login_button.click()
+        time.sleep(2)
+        print("Login phase started...")
+        try:
+            rental_username = self.driver.find_element(By.CSS_SELECTOR,self.username_field_selector)
+            if username == None:
+                username = input("Enter username: ")
+            rental_username.send_keys(username)
+
+            rental_password = self.driver.find_element(By.CSS_SELECTOR,self.password_field_selector)
+            if password == None:
+                password = maskpass.askpass(prompt="Enter password: ",mask="*")
+            rental_password.send_keys(password)
+
+            login_enter_button = self.driver.find_element(By.CSS_SELECTOR,self.enter_login_info_selector)
+            login_enter_button.click()
+        except:
+            return False
+        time.sleep(10)
         return True
 
     def get_pages(self):
@@ -59,7 +88,6 @@ class ScraperImpl(Scraper):
         print("-> Images detected.")
 
         print("Beginning scrape...")
-        os.makedirs(os.path.dirname(f"{self.dir}/"), exist_ok=True)
         try:
         # get images, loop runs until elem without canvas is reached
             for i, page in enumerate(all_pages):
@@ -80,7 +108,7 @@ class ScraperImpl(Scraper):
                 if i % 2 == 0:
                     next_page = self.driver.find_element(By.CLASS_NAME,self.page_turn_selector)
                     next_page.click()
-                    time.sleep(0.1)
+                    time.sleep(0.5)
 
             self.driver.quit()
             
@@ -90,8 +118,11 @@ class ScraperImpl(Scraper):
  
     def save_pages(self):
         if len(self.images) > 0:
+            os.makedirs(os.path.dirname(f"{self.dir}/"), exist_ok=True)
             for id, img in enumerate(self.images):
                 print(f"Saving {id + 1}.png...",end="\r")
                 with open(f"{self.dir}/page_{id + 1}.png","wb") as f:
                     f.write(img)
-        print(f"\nImages saved to local directory '{self.dir}/'.")
+            print(f"\nImages saved to local directory '{self.dir}/'.")
+        else:
+            print("\nWarning: no images to save.")

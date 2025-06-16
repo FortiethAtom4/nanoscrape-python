@@ -1,6 +1,5 @@
 import argparse, os
 
-
 class ScrapeConfig():
 
     def __init__(self, program_name: str, image_selector: str):
@@ -17,7 +16,7 @@ class ScrapeConfig():
 
         self.login_button_selector = ""
 
-    def add_arg(self,option: str, option_long: str = None, help: str = ""):
+    def add_arg(self,option: str, option_long: str, help: str = ""):
         self.parser.add_argument(option,option_long,help=help)
  
     # TODO remove

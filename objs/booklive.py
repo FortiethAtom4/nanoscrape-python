@@ -60,7 +60,7 @@ class ScraperImpl(Scraper):
         time.sleep(5) # had to add 5 seconds after pages present to catch everything. Jank but highly functional for now
 
     # logins likely won't be necessary
-    def login(self):
+    def login(self, username, password):
         return True
 
     def get_pages(self):
@@ -86,14 +86,19 @@ class ScraperImpl(Scraper):
                     part_img_child = part.find_element(By.CSS_SELECTOR,"img")
 
                     # https://stackoverflow.com/questions/64172105/acess-data-image-url-when-the-data-url-is-only-obtain-upon-rendering
+
+                    # 1443x688
+                    # my OG 1133x536
+
+                    #TODO issues with image quality stemming from around here
                     img_base64 = self.driver.execute_script(
     """
     const img = arguments[0];
 
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
-    canvas.width = 1133;
-    canvas.height = 536;
+    canvas.width = 1443;
+    canvas.height = 688;
     ctx.drawImage(img, 0, 0);
 
     data_url = canvas.toDataURL('image/png');
@@ -101,7 +106,7 @@ class ScraperImpl(Scraper):
     """, 
     part_img_child)
                     binary_data = a2b_base64(img_base64.split(',')[1])
-                    #~~
+                    
                     final_image_part = Image.open(BytesIO(binary_data))
 
                     page_data_parts.append(final_image_part)
@@ -112,7 +117,7 @@ class ScraperImpl(Scraper):
                 final_image = Image.new("RGB", (width, height))
                 y = 0
                 for part in page_data_parts:
-                    final_image.paste(part,(0,y))
+                    final_image.paste(part,(0,y+1))
                     y += part.height
 
                 self.images.append(final_image)

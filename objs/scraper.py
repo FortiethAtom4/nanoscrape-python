@@ -9,8 +9,8 @@ class Scraper(ABC):
         
 
         # for loading the webpage
-        self.options: uc.ChromeOptions = None
-        self.driver: uc.Chrome = None
+        self.options: uc.ChromeOptions
+        self.driver: uc.Chrome
 
         self.dir = ""
         self.img_selector = ""
@@ -30,8 +30,8 @@ class Scraper(ABC):
         pass
 
     @abstractmethod
-    def login(self):
-        pass
+    def login(self, username, password) -> bool:
+        return True
 
     @abstractmethod
     def get_pages(self):
