@@ -30,8 +30,8 @@ class Scraper(ABC):
         pass
 
     @abstractmethod
-    def login(self, username, password) -> bool:
-        return True
+    def login(self, username, password):
+        pass
 
     @abstractmethod
     def get_pages(self):
