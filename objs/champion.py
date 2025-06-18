@@ -45,40 +45,6 @@ class ScraperImpl(Scraper):
 
         self.images: list = []
 
-    def load_page(self):
-        print(f"Opening {self.url}...")
-        self.driver.get(self.url)
-
-    def login(self):
-        login_button = None
-        try:
-            login_button = self.driver.find_element(By.CLASS_NAME,self.login_btn_selector)
-        except NoSuchElementException:
-            print("No login elements detected, skipping")
-            return True
-        
-        print("Login requested")
-        try:
-            login_button.click()
-            time.sleep(3) # do more later but for now whatever
-
-
-            rental_username = self.driver.find_element(By.CSS_SELECTOR,self.username_field_selector)
-            login_username = input("Enter username: ")
-            rental_username.send_keys(login_username)
-
-            login_password = maskpass.askpass(prompt="Enter password: ",mask="*")
-            rental_password = self.driver.find_element(By.CSS_SELECTOR,self.password_field_selector)
-            rental_password.send_keys(login_password)
-
-            login_enter_button = self.driver.find_element(By.CSS_SELECTOR,self.enter_login_info_selector)
-
-            print("Entering credentials...")
-            login_enter_button.click()
-            return True
-        except:
-            return False
-
 
     def get_pages(self):
         # wait until page content is actually loaded
@@ -122,13 +88,3 @@ class ScraperImpl(Scraper):
             
         except Exception as e:
             print(f"\nAn error was caught during scraping:\n{e}\nAborting")
-
-        self.driver.quit()
-
-    def save_pages(self):
-        if len(self.images) > 0:
-            for id, img in enumerate(self.images):
-                print(f"Saving {id + 1}.png...",end="\r")
-                with open(f"{self.dir}/page_{id + 1}.png","wb") as f:
-                    f.write(img)
-        print(f"\nImages saved to local directory '{self.dir}/'.")

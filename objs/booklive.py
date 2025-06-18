@@ -39,7 +39,7 @@ class ScraperImpl(Scraper):
         self.img_selector = "content" #this div contains all pages, but each page has its own ID "content-p[i] where i is page #"
         self.page_turn_selector = "overswipe-wrap"
 
-        self.selector_to_wait_for = "pages"
+        self.selector_to_wait_for = ".pages"
 
         # logins havent been necessary so far
         self.login_btn_selector = "" 
@@ -48,16 +48,6 @@ class ScraperImpl(Scraper):
         self.enter_login_info_selector = ""
 
         self.images: list = []
-        
-    def load_page(self):
-        print(f"Opening {self.url}...")
-        self.driver.get(self.url)
-
-        # wait until page content is actually loaded
-        pages_present = expected_conditions.element_to_be_clickable((By.CLASS_NAME,self.selector_to_wait_for)) # TODO catch wait errors for bad links
-        timeout = 10 # seconds to wait until timeout
-        WebDriverWait(self.driver, timeout).until(pages_present)
-        time.sleep(5) # had to add 5 seconds after pages present to catch everything. Jank but highly functional for now
 
     # logins likely won't be necessary
     def login(self, username, password):
@@ -67,10 +57,10 @@ class ScraperImpl(Scraper):
         print("-> Images detected.")
 
         print("Beginning scrape...")
-        os.makedirs(os.path.dirname(f"{self.dir}/"), exist_ok=True)
+        
         try:
             
-            # click the tutorial thing off
+            # click on the edge of the page to close the tutorial popup
             actions = ActionChains(self.driver)
             actions.move_to_element_with_offset(self.driver.find_element(By.ID,self.page_turn_selector),-500,0).click().perform()
             
@@ -90,7 +80,7 @@ class ScraperImpl(Scraper):
                     # 1443x688
                     # my OG 1133x536
 
-                    #TODO issues with image quality stemming from around here
+                    #TODO issues with image splitting stemming from around here
                     img_base64 = self.driver.execute_script(
     """
     const img = arguments[0];
@@ -137,9 +127,10 @@ class ScraperImpl(Scraper):
         except Exception as e:
             print(f"\nAn error was caught during scraping:\n{e}\nAborting")
 
- 
+    # images are saved slightly differently, will need to override
     def save_pages(self):
         if len(self.images) > 0:
+            os.makedirs(os.path.dirname(f"{self.dir}/"), exist_ok=True)
             for id, img in enumerate(self.images):
                 img.save(f'{self.dir}/image_{id+1}.png')
                 print(f"Saving image_{id + 1}.png...",end="\r")

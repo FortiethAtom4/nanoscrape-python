@@ -42,46 +42,8 @@ class ScraperImpl(Scraper):
         self.enter_login_info_selector = "button.btn"
 
         self.images: list = []
-        
-    def load_page(self):
-        print(f"Opening {self.url}...")
-        self.driver.get(self.url)
-
-        # wait until page content is actually loaded
-        pages_present = expected_conditions.presence_of_element_located((By.CSS_SELECTOR,self.selector_to_wait_for)) # TODO catch wait errors for bad links
-        timeout = 10 # seconds to wait until timeout
-        WebDriverWait(self.driver, timeout).until(pages_present)
-        time.sleep(5) # had to add 5 seconds after pages present to catch everything. Jank but highly functional for now
 
     # logins now required as of chapter 21... rip
-    def login(self, username, password):
-        login_button = ""
-        try:
-            login_button = self.driver.find_element(By.CSS_SELECTOR,self.login_btn_selector)
-        except NoSuchElementException:
-            print("login button not detected, skipping")
-            return True
-        
-        login_button.click()
-        time.sleep(2)
-        print("Login phase started...")
-        try:
-            rental_username = self.driver.find_element(By.CSS_SELECTOR,self.username_field_selector)
-            if username == None:
-                username = input("Enter username: ")
-            rental_username.send_keys(username)
-
-            rental_password = self.driver.find_element(By.CSS_SELECTOR,self.password_field_selector)
-            if password == None:
-                password = maskpass.askpass(prompt="Enter password: ",mask="*")
-            rental_password.send_keys(password)
-
-            login_enter_button = self.driver.find_element(By.CSS_SELECTOR,self.enter_login_info_selector)
-            login_enter_button.click()
-        except:
-            return False
-        time.sleep(10)
-        return True
 
     def get_pages(self):
         all_pages = self.driver.find_elements(By.CLASS_NAME,self.img_selector)
@@ -114,15 +76,3 @@ class ScraperImpl(Scraper):
             
         except Exception as e:
             print(f"\nAn error was caught during scraping:\n{e}\nAborting")
-
- 
-    def save_pages(self):
-        if len(self.images) > 0:
-            os.makedirs(os.path.dirname(f"{self.dir}/"), exist_ok=True)
-            for id, img in enumerate(self.images):
-                print(f"Saving {id + 1}.png...",end="\r")
-                with open(f"{self.dir}/page_{id + 1}.png","wb") as f:
-                    f.write(img)
-            print(f"\nImages saved to local directory '{self.dir}/'.")
-        else:
-            print("\nWarning: no images to save.")
