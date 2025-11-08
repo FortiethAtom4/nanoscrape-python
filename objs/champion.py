@@ -47,15 +47,6 @@ class ScraperImpl(Scraper):
 
 
     def get_pages(self):
-        # wait until page content is actually loaded
-        pages_present = expected_conditions.element_to_be_clickable((By.CLASS_NAME,self.selector_to_wait_for)) # TODO catch wait errors for bad links
-        timeout = 10 # seconds to wait until timeout
-        WebDriverWait(self.driver, timeout).until(pages_present)
-
-        help_window_close_button = self.driver.find_element(By.CLASS_NAME,self.selector_to_wait_for)
-        help_window_close_button.click()
-
-        time.sleep(5) # had to add 5 seconds after pages present to catch everything. Jank but highly functional for now
 
         #count number of pages
         all_pages = self.driver.find_elements(By.CLASS_NAME,self.img_selector)

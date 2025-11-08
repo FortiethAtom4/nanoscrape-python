@@ -1,0 +1,72 @@
+from selenium.webdriver.common.by import By
+from selenium.common.exceptions import NoSuchElementException
+# undetected module adds some standard anti-bot detection protocols 
+import time, base64, undetected_chromedriver as uc
+
+# Scraper module intended to scrape raws of Sight of 133cm from Kurage Bunch.
+# example link: https://kuragebunch.com/episode/14079602755061194064
+
+# TODO: fix page load timeout bug
+
+# fix for undetected-chromedriver OS error: https://stackoverflow.com/questions/74817978/oserror-winerror-6-with-undetected-chromedriver/76497142
+# local imports
+from objs.scraper import Scraper
+class ScraperImpl(Scraper):
+
+    def __init__(self,url):
+        self.url = url
+        
+        self.options = uc.ChromeOptions()
+        self.options.add_argument("--disable-web-security")
+        self.options.add_argument("--headless")
+        self.driver = uc.Chrome(options=self.options)
+
+        self.dir = ""
+        self.img_selector = ".page-area"
+        self.page_turn_selector = ".page-navigation-forward"
+
+        self.selector_to_wait_for = ".viewer"
+
+        self.login_btn_selector = "button.read-button:nth-child(1)" 
+        self.username_field_selector = "div.js-show-for-guest > form:nth-child(1) > p:nth-child(4) > input:nth-child(1)"
+        self.password_field_selector = "div.js-show-for-guest > form:nth-child(1) > p:nth-child(5) > input:nth-child(1)"
+        self.enter_login_info_selector = "div.common-button-container:nth-child(7) > button:nth-child(1)"
+
+        self.images: list = []
+
+    def get_pages(self):
+        try:
+            all_pages = self.driver.find_elements(By.CSS_SELECTOR,self.img_selector)
+            print(f"-> {len(all_pages)} Images detected (including ad pages, dummy pages, etc).")
+            print("Beginning scrape...") 
+            # get images, loop runs until elem without canvas is reached
+            for i, page in enumerate(all_pages):
+                all_pages = self.driver.find_elements(By.CSS_SELECTOR,self.img_selector) # needs to be updated each time
+
+                # Skip the first dummy page
+                try:
+                    # NOTE: this try-except block guarantees that the scraper flips 1 page ahead of the images it is actually saving. Might be a good idea to look into better ways to circumvent this dummy page.
+                    page.find_element(By.CLASS_NAME,"page-dummy")
+                    continue 
+                except NoSuchElementException:
+
+                    # Get canvas images. End of chapter is non-canvas imgs, end scrape once those are reached
+                    try:
+                        canvas_element = page.find_element(By.TAG_NAME,"canvas")
+                    except NoSuchElementException:
+                        # print("End of chapter found, moving to save step")
+                        # break
+                        continue
+
+                    canvas_base64 = self.driver.execute_script("return arguments[0].toDataURL('image/png').substring(21);",canvas_element)
+                    print(f"Got {i + 1} image{"" if i == 0 else "s"}...",end="\r")
+                    canvas_png = base64.b64decode(canvas_base64)
+                    self.images.append(canvas_png)
+
+                    # click forward a page
+                    if i % 2 == 0:
+                        next_page = self.driver.find_element(By.CSS_SELECTOR,self.page_turn_selector)
+                        next_page.click()
+                        time.sleep(1)
+        except Exception as e:
+            print(f"\nAn error was caught during scraping:\n{e}\nAborting")

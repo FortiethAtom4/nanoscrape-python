@@ -1,9 +1,7 @@
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support import expected_conditions
-from selenium.webdriver.support.ui import WebDriverWait
 from selenium.common.exceptions import NoSuchElementException
 # undetected module adds some standard anti-bot detection protocols 
-import time, base64, undetected_chromedriver as uc, os, maskpass
+import time, base64, undetected_chromedriver as uc
 
 # local imports
 from objs.scraper import Scraper
@@ -70,7 +68,7 @@ class ScraperImpl(Scraper):
                 if i % 2 == 0:
                     next_page = self.driver.find_element(By.CLASS_NAME,self.page_turn_selector)
                     next_page.click()
-                    time.sleep(0.5)
+                    time.sleep(1)
 
             self.driver.quit()
             

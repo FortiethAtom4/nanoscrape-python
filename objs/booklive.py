@@ -1,6 +1,4 @@
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support import expected_conditions
-from selenium.webdriver.support.ui import WebDriverWait
 # undetected module adds some standard anti-bot detection protocols 
 import time, undetected_chromedriver as uc, os
 

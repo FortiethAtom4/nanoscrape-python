@@ -3,8 +3,8 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
-# Absract scraper class
-# TODO given the repeated code, better to make this a parent class with pre-implemented login + save than an abstract class.
+
+# Parent scraper class
 class Scraper():
 
     def __init__(self,url):
@@ -31,14 +31,18 @@ class Scraper():
 
     def load_page(self):
         print(f"Opening {self.url}...")
-        self.driver.get(self.url)
-        pages_present = expected_conditions.element_to_be_clickable((By.CSS_SELECTOR,self.selector_to_wait_for)) # TODO catch wait errors for bad links
-        timeout = 10 # seconds to wait until timeout
-        WebDriverWait(self.driver, timeout).until(pages_present)
+        try:
+            self.driver.get(self.url)
+            pages_present = expected_conditions.element_to_be_clickable((By.CSS_SELECTOR,self.selector_to_wait_for))
+            timeout = 10 # seconds to wait until timeout
+            WebDriverWait(self.driver, timeout).until(pages_present)
+        except:
+            print("Warning: Wait timeout reached.")
         time.sleep(5)
 
     # not all sites will need this function
     def login(self, username, password):
+        print("Login phase started...")
         login_button = ""
         try:
             login_button = self.driver.find_element(By.CSS_SELECTOR,self.login_btn_selector)
@@ -50,7 +54,7 @@ class Scraper():
             print("Login requested")
             login_button.click()
             time.sleep(2)
-            print("Login phase started...")
+
 
             rental_username = self.driver.find_element(By.CSS_SELECTOR,self.username_field_selector)
             if username == None:
@@ -71,7 +75,7 @@ class Scraper():
 
     # The meat of the scraper, to be overridden in a child class
     def get_pages(self):
-        print("Warning: no implementation found.")
+        raise NotImplementedError("Warning: no implementation found.")
 
     def save_pages(self):
         if len(self.images) > 0:

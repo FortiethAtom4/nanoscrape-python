@@ -2,11 +2,7 @@
 from objs.scraper import Scraper
 import importlib,  argparse
 from urllib.parse import urlparse
-
-class BadLogin(Exception):
-    def __init__(self):
-        self.msg = "Login unsuccessful."
-        super().__init__(self.msg)
+import objs.globals
 
 def nanoscrape():
     parser = argparse.ArgumentParser("nanoscrape")
@@ -20,23 +16,15 @@ def nanoscrape():
 
     # match scraper to correct subclass by url domain name
     url = urlparse(args.url)
-    scraper_class = "" #to be loaded dynamically
-    match url.hostname:
-        case "ciao.shogakukan.co.jp":
-            scraper_class = "objs.ciao"
+    scraper_class = ""
 
-        case "youngchampion.jp":
-            scraper_class = "objs.champion"
-
-        case "booklive.jp":
-            scraper_class = "objs.booklive"
-
-        case "shonenjumpplus.com":
-            scraper_class = "objs.shonenjumpplus"
-
-        case _:
-            print(f"URL {url.geturl()} not recognized by nanoscrape. Please check and try again.")
-            return
+    # dynamically load module based on URL domain
+    try:
+        scraper_class = objs.globals.DOMAINS[url.hostname]
+    except KeyError:
+        print(f"URL {url.geturl()} not recognized by nanoscrape. Please check and try again.")
+        return
+            
         
     print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
     print("~~~~~~~~~~NANOSCRAPE~~~~~~~~~~")
@@ -46,15 +34,17 @@ def nanoscrape():
     # load scraper functions for detected website
     scraper_class = getattr(importlib.import_module(scraper_class),"ScraperImpl")
     scraper = scraper_class(url.geturl())
+
     # setup scraper.dir
     scraper.dir = "images" if args.directory is None else args.directory
+
     # do the scrape
     try:
         scraper.load_page()
 
         # login functions should come with built-in check for login elements
         if not scraper.login(args.username, args.password):
-            raise BadLogin()
+            raise objs.globals.BadLogin()
         
         print("-> Login phase complete.")
 
