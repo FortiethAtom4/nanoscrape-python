@@ -1,7 +1,7 @@
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import NoSuchElementException
 # undetected module adds some standard anti-bot detection protocols 
-import time, base64, undetected_chromedriver as uc
+import time, base64, selenium.webdriver as uc
 
 # local imports
 from objs.scraper import Scraper
@@ -25,7 +25,8 @@ class ScraperImpl(Scraper):
         # webdriver
         self.options = uc.ChromeOptions()
         self.options.add_argument("--disable-web-security")
-        self.options.add_argument("--headless")
+        self.options.add_argument("--log-level=1")
+        self.options.add_argument("--headless=new")
         self.driver = uc.Chrome(options=self.options)
 
         self.dir = ""

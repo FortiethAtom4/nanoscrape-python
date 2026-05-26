@@ -8,7 +8,8 @@ DOMAINS = {
     "booklive.jp":"objs.booklive",
     "shonenjumpplus.com":"objs.shonenjumpplus",
     "kuragebunch.com":"objs.kurage-bunch",
-    "storia.takeshobo.co.jp":"objs.takeshobo"
+    "storia.takeshobo.co.jp":"objs.takeshobo",
+    "www.fanbox.cc":"objs.box"
 }
 
 class BadLogin(Exception):

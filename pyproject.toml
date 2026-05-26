@@ -1,0 +1,36 @@
+[project]
+name = "nanoscrape-python"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "attrs==24.3.0",
+    "certifi==2024.12.14",
+    "cffi==1.17.1",
+    "charset-normalizer==3.4.0",
+    "h11==0.14.0",
+    "idna==3.10",
+    "maskpass==0.3.7",
+    "numpy==2.2.5",
+    "opencv-python==4.11.0.86",
+    "outcome==1.3.0.post0",
+    "pillow==11.2.1",
+    "pycparser==2.22",
+    "pynput==1.8.1",
+    "pysocks==1.7.1",
+    "requests==2.32.3",
+    "selenium==4.27.1",
+    "selenium-stealth>=1.0.6",
+    "setuptools==75.6.0",
+    "six==1.17.0",
+    "sniffio==1.3.1",
+    "sortedcontainers==2.4.0",
+    "trio==0.27.0",
+    "trio-websocket==0.11.1",
+    "typing-extensions==4.12.2",
+    "urllib3==2.2.3",
+    "websocket-client==1.8.0",
+    "websockets==14.1",
+    "wsproto==1.2.0",
+]

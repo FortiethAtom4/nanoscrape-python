@@ -1,6 +1,6 @@
 from selenium.webdriver.common.by import By
 # undetected module adds some standard anti-bot detection protocols 
-import time, undetected_chromedriver as uc, os
+import time, selenium.webdriver.chrome as uc, os
 
 # need this stuff to get image and convert into something usable
 from binascii import a2b_base64
