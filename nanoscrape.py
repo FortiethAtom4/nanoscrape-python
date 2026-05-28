@@ -29,7 +29,7 @@ def nanoscrape():
     print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
     print("~~~~~~~~~~NANOSCRAPE~~~~~~~~~~")
     print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
-    print("nanoscrape-python version 4/2025.")
+    print("nanoscrape-python version 5/2026.")
 
     # load scraper functions for detected website
     scraper_class = getattr(importlib.import_module(scraper_class),"ScraperImpl")
