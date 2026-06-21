@@ -69,9 +69,10 @@ class Scraper():
 
             login_enter_button = self.driver.find_element(By.CSS_SELECTOR,self.enter_login_info_selector)
             login_enter_button.click()
-        except:
+        except Exception as e:
+            print(e)
             return False
-        time.sleep(5)
+        time.sleep(10)
         return True
 
     # The meat of the scraper, to be overridden in a child class

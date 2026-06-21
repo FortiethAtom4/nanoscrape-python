@@ -27,6 +27,7 @@ class ScraperImpl(Scraper):
         self.options.add_argument("--disable-web-security")
         self.options.add_argument("--log-level=1")
         self.options.add_argument("--headless=new")
+        self.options.add_argument("--window-size=1920,1080") 
         self.driver = uc.Chrome(options=self.options)
 
         self.dir = ""
@@ -69,7 +70,7 @@ class ScraperImpl(Scraper):
                 if i % 2 == 0:
                     next_page = self.driver.find_element(By.CLASS_NAME,self.page_turn_selector)
                     next_page.click()
-                    time.sleep(1)
+                    time.sleep(1.5)
 
             self.driver.quit()
             
